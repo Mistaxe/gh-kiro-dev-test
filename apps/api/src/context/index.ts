@@ -1,0 +1,27 @@
+// Context builders for different resource types
+export { BaseContextBuilder, createContextBuilder, createLegacyContextBuilder } from './base-context-builder.js'
+export { ClientContextBuilder, createClientContextBuilder } from './client-context-builder.js'
+export { NoteContextBuilder, createNoteContextBuilder } from './note-context-builder.js'
+export { ReferralContextBuilder, createReferralContextBuilder } from './referral-context-builder.js'
+
+// Import classes for factory function
+import { BaseContextBuilder } from './base-context-builder.js'
+import { ClientContextBuilder } from './client-context-builder.js'
+import { NoteContextBuilder } from './note-context-builder.js'
+import { ReferralContextBuilder } from './referral-context-builder.js'
+
+// Factory function to create appropriate context builder for resource type
+export function createResourceContextBuilder(resourceType: 'client' | 'note' | 'referral' | 'report') {
+  switch (resourceType) {
+    case 'client':
+      return new ClientContextBuilder()
+    case 'note':
+      return new NoteContextBuilder()
+    case 'referral':
+      return new ReferralContextBuilder()
+    case 'report':
+      return new BaseContextBuilder() // Use base builder for reports
+    default:
+      throw new Error(`Unknown resource type: ${resourceType}`)
+  }
+}
