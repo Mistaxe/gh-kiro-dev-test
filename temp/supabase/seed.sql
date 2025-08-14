@@ -1,0 +1,20 @@
+insert into app.roles (id, name, scope_type, description) values
+  (gen_random_uuid(), 'RegionalAdmin', 'region', 'Regional admin'),
+  (gen_random_uuid(), 'RegionalAnalyst', 'region', 'Regional analyst'),
+  (gen_random_uuid(), 'NetworkAdmin', 'network', 'Network admin'),
+  (gen_random_uuid(), 'NetworkEditor', 'network', 'Network profile editor'),
+  (gen_random_uuid(), 'NetworkViewer', 'network', 'Network viewer'),
+  (gen_random_uuid(), 'OrgAdmin', 'org', 'Organization admin'),
+  (gen_random_uuid(), 'OrgManager', 'org', 'Organization manager'),
+  (gen_random_uuid(), 'OrgViewer', 'org', 'Organization viewer'),
+  (gen_random_uuid(), 'FinanceManager', 'org', 'Finance manager'),
+  (gen_random_uuid(), 'LocationManager', 'location', 'Service location manager'),
+  (gen_random_uuid(), 'IntakeCoordinator', 'location', 'Intake coordinator'),
+  (gen_random_uuid(), 'CaseManager', 'location', 'Case manager'),
+  (gen_random_uuid(), 'PeerSpecialist', 'location', 'Peer specialist'),
+  (gen_random_uuid(), 'Clinician', 'location', 'Clinician'),
+  (gen_random_uuid(), 'Curator', 'global', 'Unclaimed service curator'),
+  (gen_random_uuid(), 'HelperBasic', 'global', 'Independent helper'),
+  (gen_random_uuid(), 'HelperVerified', 'org', 'Affiliated helper'),
+  (gen_random_uuid(), 'BasicAccount', 'global', 'Authenticated basic user')
+on conflict do nothing;
