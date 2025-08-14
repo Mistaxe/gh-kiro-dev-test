@@ -1,0 +1,6 @@
+# dotenv files (keep examples only)
+.env
+.env.*
+apps/**/.env
+apps/**/.env.*
+!**/.env.example
