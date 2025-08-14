@@ -1,0 +1,5 @@
+p, CaseManager, Client, read, allow
+p, CaseManager, Note, read, allow
+p, CaseManager, Note, write, allow
+p, Admin, Client, read, allow
+p, Admin, Client, write, allow
