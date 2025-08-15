@@ -1,0 +1,1 @@
+Assume windows environment using powershell when building and executing terminal commands. 
