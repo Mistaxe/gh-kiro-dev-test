@@ -16,6 +16,7 @@ declare module 'fastify' {
     object?: AuthObject;
     action?: string;
     ctx?: AuthorizationContext;
+    authContext?: AuthorizationContext; // Add authContext for backward compatibility
   }
 }
 
@@ -80,6 +81,7 @@ export function authorize(contextBuilder?: LegacyContextBuilder) {
       // Build authorization context if builder provided
       if (contextBuilder) {
         req.ctx = await contextBuilder(req);
+        req.authContext = req.ctx; // Set authContext for backward compatibility
       }
 
       // Ensure required authorization properties are set

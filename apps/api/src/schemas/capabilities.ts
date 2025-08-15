@@ -14,7 +14,8 @@ export const CapabilitiesResponseSchema = z.object({
   roles: z.array(z.object({
     role: z.string(),
     scope_type: z.string(),
-    scope_id: z.string()
+    scope_id: z.string(),
+    expires_at: z.string().optional()
   })),
   capabilities: z.array(z.string())
 });

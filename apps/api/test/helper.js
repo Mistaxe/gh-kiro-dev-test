@@ -3,6 +3,12 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+// Mock user for testing
+const mockUser = {
+    auth_user_id: 'auth_user_123',
+    email: 'test@example.com',
+    role: 'CaseManager'
+};
 // Build the app for testing
 export async function build() {
     const app = Fastify({
@@ -10,8 +16,14 @@ export async function build() {
     });
     // Register plugins that would normally be in index.ts
     await app.register(import('@fastify/sensible'));
-    // Register dev routes for testing
-    await app.register(import('../src/routes/dev.js'));
+    // Mock authentication plugin for testing
+    app.addHook('preHandler', async (req) => {
+        if (req.headers.authorization?.startsWith('Bearer ')) {
+            req.user = mockUser;
+        }
+    });
+    // Register routes for testing
+    await app.register(import('../src/routes/capabilities.js'), { prefix: '/api' });
     // Add health endpoint for testing
     app.get('/health', async () => {
         const { policyVersion } = await import('../src/middleware/authorize.js');

@@ -1,10 +1,12 @@
 import { authorize } from '../middleware/authorize.js';
 import { CapabilitiesQuerySchema, CapabilitiesResponseSchema } from '../schemas/capabilities.js';
+import { getCapabilitiesService } from '../services/capabilities.js';
 const capabilities = async (app) => {
+    const capabilitiesService = getCapabilitiesService();
     // GET /me/capabilities - Check user capabilities and membership
     app.get('/me/capabilities', {
         schema: {
-            description: 'Get user capabilities and membership status',
+            description: 'Get user capabilities and membership status with scope-based filtering',
             tags: ['User'],
             security: [{ Bearer: [] }],
             querystring: {
@@ -35,7 +37,8 @@ const capabilities = async (app) => {
                                 properties: {
                                     role: { type: 'string' },
                                     scope_type: { type: 'string' },
-                                    scope_id: { type: 'string' }
+                                    scope_id: { type: 'string' },
+                                    expires_at: { type: 'string', nullable: true }
                                 }
                             }
                         },
@@ -45,7 +48,25 @@ const capabilities = async (app) => {
                         }
                     }
                 },
+                400: {
+                    type: 'object',
+                    properties: {
+                        code: { type: 'string' },
+                        message: { type: 'string' },
+                        reason: { type: 'string' },
+                        correlationId: { type: 'string' }
+                    }
+                },
                 401: {
+                    type: 'object',
+                    properties: {
+                        code: { type: 'string' },
+                        message: { type: 'string' },
+                        reason: { type: 'string' },
+                        correlationId: { type: 'string' }
+                    }
+                },
+                500: {
                     type: 'object',
                     properties: {
                         code: { type: 'string' },
@@ -58,60 +79,98 @@ const capabilities = async (app) => {
         },
         preHandler: authorize() // Basic auth check, no specific authorization needed
     }, async (request, reply) => {
-        // Validate query parameters with Zod
-        const queryResult = CapabilitiesQuerySchema.safeParse(request.query);
-        if (!queryResult.success) {
-            return reply.code(400).send({
-                code: 'VALIDATION_ERROR',
-                message: 'Invalid query parameters',
-                reason: queryResult.error.message,
-                correlationId: request.id
-            });
-        }
-        const { scopeType, scopeId } = queryResult.data;
-        if (!request.user) {
-            return reply.code(401).send({
-                code: 'AUTHENTICATION_REQUIRED',
-                message: 'Authentication required',
-                reason: 'No valid JWT token provided',
-                correlationId: request.id
-            });
-        }
-        // TODO: Query database for actual role assignments and capabilities
-        // For now, return mock data based on JWT claims
-        const mockRoles = [
-            {
-                role: request.user.role || 'BasicAccount',
-                scope_type: 'org',
-                scope_id: 'org_123'
+        try {
+            // Validate query parameters with Zod
+            const queryResult = CapabilitiesQuerySchema.safeParse(request.query);
+            if (!queryResult.success) {
+                return reply.code(400).send({
+                    code: 'VALIDATION_ERROR',
+                    message: 'Invalid query parameters',
+                    reason: queryResult.error.message,
+                    correlationId: request.id
+                });
             }
-        ];
-        // Check membership for requested scope
-        let member = false;
-        if (scopeType && scopeId) {
-            member = mockRoles.some(role => role.scope_type === scopeType && role.scope_id === scopeId);
+            const { scopeType, scopeId } = queryResult.data;
+            if (!request.user) {
+                return reply.code(401).send({
+                    code: 'AUTHENTICATION_REQUIRED',
+                    message: 'Authentication required',
+                    reason: 'No valid JWT token provided',
+                    correlationId: request.id
+                });
+            }
+            // Get capabilities from service
+            const result = await capabilitiesService.getUserCapabilities(request.user, scopeType, scopeId);
+            // Validate response with Zod schema
+            const validatedResponse = CapabilitiesResponseSchema.parse(result);
+            request.log.debug({
+                userId: request.user.auth_user_id,
+                scopeType,
+                scopeId,
+                member: result.member,
+                rolesCount: result.roles.length,
+                capabilitiesCount: result.capabilities.length
+            }, 'Capabilities retrieved successfully');
+            return validatedResponse;
         }
-        else {
-            // If no specific scope requested, user is a member if they have any roles
-            member = mockRoles.length > 0;
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            request.log.error({
+                error: errorMessage,
+                userId: request.user?.auth_user_id,
+                correlationId: request.id
+            }, 'Failed to retrieve capabilities');
+            return reply.code(500).send({
+                code: 'CAPABILITIES_ERROR',
+                message: 'Failed to retrieve user capabilities',
+                reason: errorMessage,
+                correlationId: request.id
+            });
         }
-        // TODO: Calculate actual capabilities based on roles and policies
-        const mockCapabilities = member ? [
-            'read:clients',
-            'write:notes',
-            'read:referrals'
-        ] : [];
-        const response = {
-            user_id: request.user.auth_user_id,
-            email: request.user.email,
-            member,
-            roles: mockRoles,
-            capabilities: mockCapabilities
-        };
-        // Validate response with Zod schema
-        const validatedResponse = CapabilitiesResponseSchema.parse(response);
-        return validatedResponse;
     });
+    // GET /me/capabilities/cache - Get cache statistics (development only)
+    if (process.env.NODE_ENV === 'development') {
+        app.get('/me/capabilities/cache', {
+            schema: {
+                description: 'Get capabilities cache statistics (development only)',
+                tags: ['Development'],
+                security: [{ Bearer: [] }],
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            size: { type: 'number' },
+                            keys: { type: 'array', items: { type: 'string' } }
+                        }
+                    }
+                }
+            },
+            preHandler: authorize()
+        }, async (request, reply) => {
+            const stats = capabilitiesService.getCacheStats();
+            return stats;
+        });
+        // DELETE /me/capabilities/cache - Clear capabilities cache (development only)
+        app.delete('/me/capabilities/cache', {
+            schema: {
+                description: 'Clear capabilities cache (development only)',
+                tags: ['Development'],
+                security: [{ Bearer: [] }],
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string' }
+                        }
+                    }
+                }
+            },
+            preHandler: authorize()
+        }, async (request, reply) => {
+            capabilitiesService.clearCache(request.user?.auth_user_id);
+            return { message: 'Cache cleared successfully' };
+        });
+    }
 };
 export default capabilities;
 //# sourceMappingURL=capabilities.js.map

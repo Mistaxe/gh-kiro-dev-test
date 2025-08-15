@@ -3,11 +3,13 @@ export { BaseContextBuilder, createContextBuilder, createLegacyContextBuilder } 
 export { ClientContextBuilder, createClientContextBuilder } from './client-context-builder.js';
 export { NoteContextBuilder, createNoteContextBuilder } from './note-context-builder.js';
 export { ReferralContextBuilder, createReferralContextBuilder } from './referral-context-builder.js';
+export { CaseContextBuilder, createCaseContextBuilder } from './case-context-builder.js';
 // Import classes for factory function
 import { BaseContextBuilder } from './base-context-builder.js';
 import { ClientContextBuilder } from './client-context-builder.js';
 import { NoteContextBuilder } from './note-context-builder.js';
 import { ReferralContextBuilder } from './referral-context-builder.js';
+import { CaseContextBuilder } from './case-context-builder.js';
 // Factory function to create appropriate context builder for resource type
 export function createResourceContextBuilder(resourceType) {
     switch (resourceType) {
@@ -17,6 +19,8 @@ export function createResourceContextBuilder(resourceType) {
             return new NoteContextBuilder();
         case 'referral':
             return new ReferralContextBuilder();
+        case 'case':
+            return new CaseContextBuilder();
         case 'report':
             return new BaseContextBuilder(); // Use base builder for reports
         default:

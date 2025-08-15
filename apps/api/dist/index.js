@@ -1,3 +1,6 @@
+// Load environment variables first
+import dotenv from 'dotenv';
+dotenv.config();
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import sensible from '@fastify/sensible';
@@ -8,7 +11,8 @@ import swaggerUi from '@fastify/swagger-ui';
 import subauth from './plugins/subauth.js';
 import validation from './plugins/validation.js';
 // Routes
-import exampleClients from './routes/example.clients.js';
+import clients from './routes/clients.js';
+import cases from './routes/cases.js';
 import capabilities from './routes/capabilities.js';
 import dev from './routes/dev.js';
 const app = Fastify({
@@ -95,7 +99,8 @@ app.get('/health', {
 });
 // Register business routes
 await app.register(capabilities, { prefix: '/api' });
-await app.register(exampleClients, { prefix: '/api' });
+await app.register(clients, { prefix: '/api' });
+await app.register(cases, { prefix: '/api' });
 await app.register(dev, { prefix: '/api' });
 // Global error handler
 app.setErrorHandler(async (error, request, reply) => {
