@@ -98,15 +98,15 @@
     - Build case closure workflow with audit trail
     - _Requirements: 7.2, 7.3, 7.5_
 
-- [ ] 5. Service Registry and Availability System
-  - [ ] 5.1 Build service profile management
+- [x] 5. Service Registry and Availability System
+  - [x] 5.1 Build service profile management
     - Create service profile CRUD with claimed/unclaimed logic
     - Implement full-text search with PostgreSQL tsvector
     - Add JSONB attribute filtering for eligibility criteria
     - Build curator access controls for unclaimed services
     - _Requirements: 4.1, 4.3, 4.5_
 
-  - [ ] 5.2 Implement availability engine
+  - [x] 5.2 Implement availability engine
     - Create availability CRUD with optimistic concurrency control
     - Build JSON predicate matching for client needs
     - Implement real-time availability updates with version checking

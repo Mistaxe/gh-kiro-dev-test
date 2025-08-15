@@ -17,6 +17,8 @@ import validation from './plugins/validation.js';
 import clients from './routes/clients.js';
 import cases from './routes/cases.js';
 import capabilities from './routes/capabilities.js';
+import serviceProfiles from './routes/service-profiles.js';
+import availability from './routes/availability.js';
 import dev from './routes/dev.js';
 
 const app = Fastify({
@@ -114,6 +116,8 @@ app.get('/health', {
 await app.register(capabilities, { prefix: '/api' });
 await app.register(clients, { prefix: '/api' });
 await app.register(cases, { prefix: '/api' });
+await app.register(serviceProfiles, { prefix: '/api' });
+await app.register(availability, { prefix: '/api' });
 await app.register(dev, { prefix: '/api' });
 
 // Global error handler
