@@ -48,15 +48,15 @@
     - Unit tests: platform vs organization vs location scopes; expiry and revocation
     - _Requirements: 2.1, 2.2, 13.2, 14.2_
 
-- [ ] 3. Database Schema Extensions
-  - [ ] 3.1 Add missing tables for enhanced consent and linking
+- [x] 3. Database Schema Extensions
+  - [x] 3.1 Add missing tables for enhanced consent and linking
     - Create client_consents table with normalized consent structure
     - Add client_links table for cross-org client linking audit trail
     - Update availability table with version column for optimistic concurrency
     - Add hash chain column to audit_logs for tamper evidence
     - _Requirements: 13.1, 13.4, 14.1, 19.1, 20.3_
 
-  - [ ] 3.2 Implement SECURITY DEFINER RPC functions
+  - [x] 3.2 Implement SECURITY DEFINER RPC functions
     - Create rpc_upsert_availability with authorization checks and version control
     - Build rpc_create_note with helper vs provider classification
     - Implement rpc_create_referral with PHI detection and consent validation
@@ -65,22 +65,22 @@
     - RPCs re-apply the same policy checks as the service layer before DML
     - _Requirements: 7.1, 8.1, 8.2, 13.1, 21.2_
 
-  - [ ] 3.3 Create performance indexes and constraints
+  - [x] 3.3 Create performance indexes and constraints
     - Add tenant_root_id indexes to all tenant-scoped tables
     - Create composite indexes for common query patterns
     - Add trigram indexes for fuzzy name matching
     - Implement PostGIS indexes for geospatial queries
     - _Requirements: 21.1, 21.3_
 
-- [ ] 4. Core Business Logic Implementation
-  - [ ] 4.1 Implement capabilities endpoint
+- [-] 4. Core Business Logic Implementation
+  - [x] 4.1 Implement capabilities endpoint
     - Create GET /me/capabilities endpoint with scope-based filtering
     - Integrate with app.capabilities() database function
     - Add role assignment resolution and membership checking
     - Implement caching strategy for capability lookups
     - _Requirements: 1.4, 4.1, 4.2_
 
-  - [ ] 4.2 Build client management services
+  - [x] 4.2 Build client management services
     - Create client CRUD operations with fingerprint generation
     - Implement duplicate client detection using privacy-preserving fingerprints
     - Add cross-org client linking with consent validation
@@ -91,7 +91,7 @@
     - Test: **dedupe leak**—ensure zero PHI revealed pre-consent
     - _Requirements: 7.1, 7.2, 13.1, 13.2, 13.3_
 
-  - [ ] 4.3 Implement case management functionality
+  - [x] 4.3 Implement case management functionality
     - Create client case CRUD with assignment and program validation
     - Add caseload management with member access controls
     - Implement program-based access level enforcement
