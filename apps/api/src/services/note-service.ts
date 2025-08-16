@@ -16,7 +16,14 @@ import type {
  * confidential note access controls, and helper journal separation.
  */
 export class NoteService {
-  private database = getDatabaseClient()
+  private _database?: ReturnType<typeof getDatabaseClient>
+  
+  private get database() {
+    if (!this._database) {
+      this._database = getDatabaseClient()
+    }
+    return this._database
+  }
   
   /**
    * Create a new note with proper classification

@@ -17,7 +17,14 @@ import type {
  * visibility scope controls, and service matching functionality.
  */
 export class ReferralService {
-  private database = getDatabaseClient()
+  private _database?: ReturnType<typeof getDatabaseClient>
+  
+  private get database() {
+    if (!this._database) {
+      this._database = getDatabaseClient()
+    }
+    return this._database
+  }
   
   /**
    * Create a new referral with PHI detection and consent validation
