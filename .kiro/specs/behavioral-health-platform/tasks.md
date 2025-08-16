@@ -115,7 +115,7 @@
     - Concurrent update test: exactly one succeeds, others 409
     - _Requirements: 4.2, 4.4, 20.1, 20.2, 20.3_
 
-- [ ] 6. Notes and Referral System
+- [-] 6. Notes and Referral System
   - [ ] 6.1 Implement note management
     - Create note CRUD with helper vs provider classification
     - Add confidential note access with temporary grant support
