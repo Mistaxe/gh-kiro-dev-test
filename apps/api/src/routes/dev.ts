@@ -3,8 +3,16 @@ import { reloadPolicies, policyVersion } from '../middleware/authorize.js';
 import { newEnforcer } from 'casbin';
 import path from 'path';
 import fs from 'fs';
-import { AuthorizationContext, PolicySimulationResult } from '@app/shared'
+import { 
+  AuthorizationContext, 
+  PolicySimulationResult,
+  ImpersonationRequest,
+  ImpersonationResponse,
+  ScopeSelectionRequest,
+  ScopeSelectionResponse
+} from '@app/shared'
 import { AuthSubject, AuthObject } from '../types/auth.js'
+import { PersonaService } from '../services/persona-service.js'
 import { v4 as uuidv4 } from 'uuid'
 
 // Audit policy simulation for development tracking
@@ -44,6 +52,8 @@ const dev: FastifyPluginAsync = async (app) => {
   if (process.env.NODE_ENV === 'production') {
     return;
   }
+
+  const personaService = new PersonaService()
 
   // POST /dev/policy/simulate - Simulate policy decisions
   app.post('/dev/policy/simulate', {
@@ -236,6 +246,345 @@ const dev: FastifyPluginAsync = async (app) => {
       });
     }
   });
+
+  // GET /dev/personas - List all available personas
+  app.get('/dev/personas', {
+    schema: {
+      description: 'List all available personas for testing',
+      tags: ['Development', 'Personas'],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            personas: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  auth_user_id: { type: 'string' },
+                  email: { type: 'string' },
+                  display_name: { type: 'string' },
+                  phone: { type: 'string' },
+                  is_helper: { type: 'boolean' },
+                  roles: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        role: { type: 'string' },
+                        scope_type: { type: 'string' },
+                        scope_id: { type: 'string' },
+                        expires_at: { type: 'string' }
+                      }
+                    }
+                  },
+                  organizations: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        tenant_root_id: { type: 'string' }
+                      }
+                    }
+                  },
+                  locations: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        org_id: { type: 'string' }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            total: { type: 'number' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const result = await personaService.listPersonas()
+      request.log.info({ count: result.total }, 'Listed personas for lab testing')
+      return result
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      request.log.error({ error: errorMessage }, 'Failed to list personas')
+      
+      return reply.code(500).send({
+        code: 'PERSONA_LIST_ERROR',
+        message: 'Failed to list personas',
+        reason: errorMessage,
+        correlationId: request.id
+      })
+    }
+  })
+
+  // POST /dev/personas/impersonate - Start impersonation session
+  app.post('/dev/personas/impersonate', {
+    schema: {
+      description: 'Start impersonation session for a persona',
+      tags: ['Development', 'Personas'],
+      body: {
+        type: 'object',
+        required: ['persona_id'],
+        properties: {
+          persona_id: { type: 'string' },
+          active_org_id: { type: 'string' },
+          active_location_id: { type: 'string' },
+          purpose: { 
+            type: 'string', 
+            enum: ['care', 'billing', 'QA', 'oversight', 'research'] 
+          }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            session: {
+              type: 'object',
+              properties: {
+                persona_id: { type: 'string' },
+                active_org_id: { type: 'string' },
+                active_location_id: { type: 'string' },
+                purpose: { type: 'string' },
+                session_started_at: { type: 'string' }
+              }
+            },
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { persona_id, active_org_id, active_location_id, purpose } = request.body as ImpersonationRequest
+      
+      const session = await personaService.startImpersonation(
+        persona_id,
+        active_org_id,
+        active_location_id,
+        purpose
+      )
+
+      const response: ImpersonationResponse = {
+        success: true,
+        session,
+        message: 'Impersonation session started successfully'
+      }
+
+      request.log.info({ 
+        persona_id, 
+        active_org_id, 
+        active_location_id, 
+        purpose 
+      }, 'Started persona impersonation session')
+
+      return response
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      request.log.error({ error: errorMessage }, 'Failed to start impersonation')
+      
+      return reply.code(400).send({
+        code: 'IMPERSONATION_ERROR',
+        message: 'Failed to start impersonation session',
+        reason: errorMessage,
+        correlationId: request.id
+      })
+    }
+  })
+
+  // PUT /dev/personas/:personaId/scope - Update scope selection
+  app.put('/dev/personas/:personaId/scope', {
+    schema: {
+      description: 'Update scope selection for current persona session',
+      tags: ['Development', 'Personas'],
+      params: {
+        type: 'object',
+        properties: {
+          personaId: { type: 'string' }
+        }
+      },
+      body: {
+        type: 'object',
+        properties: {
+          active_org_id: { type: 'string' },
+          active_location_id: { type: 'string' },
+          purpose: { 
+            type: 'string', 
+            enum: ['care', 'billing', 'QA', 'oversight', 'research'] 
+          }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            session: {
+              type: 'object',
+              properties: {
+                persona_id: { type: 'string' },
+                active_org_id: { type: 'string' },
+                active_location_id: { type: 'string' },
+                purpose: { type: 'string' },
+                session_started_at: { type: 'string' }
+              }
+            },
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { personaId } = request.params as { personaId: string }
+      const { active_org_id, active_location_id, purpose } = request.body as ScopeSelectionRequest
+      
+      const session = await personaService.updateScopeSelection(
+        personaId,
+        active_org_id,
+        active_location_id,
+        purpose
+      )
+
+      const response: ScopeSelectionResponse = {
+        success: true,
+        session,
+        message: 'Scope selection updated successfully'
+      }
+
+      request.log.info({ 
+        persona_id: personaId, 
+        active_org_id, 
+        active_location_id, 
+        purpose 
+      }, 'Updated persona scope selection')
+
+      return response
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      request.log.error({ error: errorMessage }, 'Failed to update scope selection')
+      
+      return reply.code(400).send({
+        code: 'SCOPE_UPDATE_ERROR',
+        message: 'Failed to update scope selection',
+        reason: errorMessage,
+        correlationId: request.id
+      })
+    }
+  })
+
+  // GET /dev/personas/:personaId/session - Get current session
+  app.get('/dev/personas/:personaId/session', {
+    schema: {
+      description: 'Get current session for a persona',
+      tags: ['Development', 'Personas'],
+      params: {
+        type: 'object',
+        properties: {
+          personaId: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            session: {
+              type: 'object',
+              properties: {
+                persona_id: { type: 'string' },
+                active_org_id: { type: 'string' },
+                active_location_id: { type: 'string' },
+                purpose: { type: 'string' },
+                session_started_at: { type: 'string' }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { personaId } = request.params as { personaId: string }
+      const session = await personaService.getCurrentSession(personaId)
+      
+      if (!session) {
+        return reply.code(404).send({
+          code: 'SESSION_NOT_FOUND',
+          message: 'No active session found for persona',
+          correlationId: request.id
+        })
+      }
+
+      return { session }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      request.log.error({ error: errorMessage }, 'Failed to get current session')
+      
+      return reply.code(500).send({
+        code: 'SESSION_ERROR',
+        message: 'Failed to get current session',
+        reason: errorMessage,
+        correlationId: request.id
+      })
+    }
+  })
+
+  // DELETE /dev/personas/:personaId/session - End impersonation session
+  app.delete('/dev/personas/:personaId/session', {
+    schema: {
+      description: 'End impersonation session for a persona',
+      tags: ['Development', 'Personas'],
+      params: {
+        type: 'object',
+        properties: {
+          personaId: { type: 'string' }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { personaId } = request.params as { personaId: string }
+      await personaService.endImpersonation(personaId)
+      
+      request.log.info({ persona_id: personaId }, 'Ended persona impersonation session')
+      
+      return {
+        success: true,
+        message: 'Impersonation session ended successfully'
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      request.log.error({ error: errorMessage }, 'Failed to end impersonation session')
+      
+      return reply.code(500).send({
+        code: 'SESSION_END_ERROR',
+        message: 'Failed to end impersonation session',
+        reason: errorMessage,
+        correlationId: request.id
+      })
+    }
+  })
 };
 
 export default dev;

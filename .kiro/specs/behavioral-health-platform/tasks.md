@@ -133,14 +133,14 @@
     - _Requirements: 8.1, 8.4, 3.4, 3.5_
 
 - [ ] 7. Lab/Test Harness Development
-  - [-] 7.1 Create Lab UI shell and navigation
+  - [x] 7.1 Create Lab UI shell and navigation
     - Build Next.js app with App Router and Tailwind CSS
     - Create lab layout with tab navigation for all components
     - Add shadcn/ui components for consistent styling
     - Implement responsive design for development workflows
     - _Requirements: 5.1_
 
-  - [ ] 7.2 Implement persona management and impersonation
+  - [-] 7.2 Implement persona management and impersonation
     - Create dev endpoints for persona listing and impersonation
     - Build persona UI with role assignment display
     - Add session management for impersonated users
