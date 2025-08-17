@@ -140,14 +140,14 @@
     - Implement responsive design for development workflows
     - _Requirements: 5.1_
 
-  - [-] 7.2 Implement persona management and impersonation
+  - [x] 7.2 Implement persona management and impersonation
     - Create dev endpoints for persona listing and impersonation
     - Build persona UI with role assignment display
     - Add session management for impersonated users
     - Implement active organization and location selection
     - _Requirements: 5.1, 5.5_
 
-  - [ ] 7.3 Build policy simulator interface
+  - [-] 7.3 Build policy simulator interface
     - Create policy simulation UI with role, object, action inputs
     - Add context builder interface for testing scenarios
     - Implement real-time policy evaluation with decision display
