@@ -125,7 +125,7 @@
     - Access to **confidential** notes requires a temporary grant or explicit policy
     - _Requirements: 8.2, 8.3, 22.1, 22.2_
 
-  - [ ] 6.2 Build referral workflow
+  - [-] 6.2 Build referral workflow
     - Create referral CRUD with direct vs record-keeping types
     - Implement PHI detection and consent validation for referrals
     - Add visibility scope controls and status tracking

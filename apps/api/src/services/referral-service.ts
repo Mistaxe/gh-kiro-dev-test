@@ -166,9 +166,14 @@ export class ReferralService {
       `
       values.push(userId)
 
-      // For now, we'll use a simplified approach since we don't have raw SQL support
-      // In a real implementation, we'd create an RPC function for updates
-      throw new Error('Referral updates not yet implemented - requires RPC function')
+      // Use the RPC function for updates
+      await this.database.rpc('rpc_update_referral', {
+        p_referral_id: referralId,
+        p_title: request.title || null,
+        p_description: request.description || null,
+        p_urgency: request.urgency || null,
+        p_visibility_scope: request.visibility_scope || null
+      })
 
     } catch (error) {
       console.error('Error updating referral:', error)
@@ -217,9 +222,11 @@ export class ReferralService {
         throw new Error('Only pending referrals can be cancelled')
       }
 
-      // For now, we'll use a simplified approach since we don't have direct table access
-      // In a real implementation, we'd create an RPC function for cancellation
-      throw new Error('Referral cancellation not yet implemented - requires RPC function')
+      // Use the RPC function for cancellation
+      await this.database.rpc('rpc_cancel_referral', {
+        p_referral_id: referralId,
+        p_reason: reason
+      })
 
     } catch (error) {
       console.error('Error cancelling referral:', error)
@@ -290,10 +297,10 @@ export class ReferralService {
     received: { total: number; pending: number; accepted: number; declined: number }
   }> {
     try {
-      // For now, return mock stats - in real implementation, we'd create RPC functions
-      return {
-        sent: { total: 0, pending: 0, accepted: 0, declined: 0 },
-        received: { total: 0, pending: 0, accepted: 0, declined: 0 }
+      const result = await this.database.rpc('rpc_get_referral_stats')
+      return result as {
+        sent: { total: number; pending: number; accepted: number; declined: number }
+        received: { total: number; pending: number; accepted: number; declined: number }
       }
     } catch (error) {
       console.error('Error getting referral stats:', error)

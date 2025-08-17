@@ -532,8 +532,7 @@ create index if not exists client_consents_client_idx on app.client_consents(cli
 create index if not exists client_consents_active_idx on app.client_consents(client_id, scope_type, scope_id) where revoked_at is null;
 create index if not exists client_links_client_idx on app.client_links(client_id);
 create index if not exists client_links_active_idx on app.client_links(client_id, from_org_id, to_org_id) where unlinked_at is null;
---
- Case Management RPC Functions
+-- Case Management RPC Functions
 -- These functions implement case CRUD operations with proper authorization and audit logging
 
 -- RPC function for creating cases with assignment validation
