@@ -1,99 +1,127 @@
+import Link from 'next/link'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ArrowRight, Info } from 'lucide-react'
+
+const featuredTools = [
+  {
+    title: 'Policy Simulator',
+    description: 'Test authorization policies with different roles, objects, and contexts.',
+    href: '/lab/policies',
+    icon: '🔒',
+    category: 'Authorization'
+  },
+  {
+    title: 'Persona Management',
+    description: 'Switch between different user personas for comprehensive testing.',
+    href: '/lab/personas',
+    icon: '👤',
+    category: 'Identity'
+  },
+  {
+    title: 'RLS Testing',
+    description: 'Test Row Level Security policies with different user contexts.',
+    href: '/lab/rls',
+    icon: '🛡️',
+    category: 'Authorization'
+  },
+  {
+    title: 'Data Seeder',
+    description: 'Generate realistic test data for development and testing.',
+    href: '/lab/seeder',
+    icon: '🌱',
+    category: 'Data'
+  }
+]
+
 export default function LabHome() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-3">
           Lab/Test Harness
-        </h2>
-        <p className="text-gray-600">
+        </h1>
+        <p className="text-lg text-muted-foreground">
           Development and testing environment for the Behavioral Health Platform.
           Use the navigation on the left to access different testing tools.
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Policy Simulator
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Test authorization policies with different roles, objects, and contexts.
-          </p>
-          <a
-            href="/lab/policies"
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Open Policy Simulator →
-          </a>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Context Builder
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Build and validate authorization contexts for different scenarios.
-          </p>
-          <a
-            href="/lab/context"
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Open Context Builder →
-          </a>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Persona Management
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Switch between different user personas for testing.
-          </p>
-          <a
-            href="/lab/personas"
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Manage Personas →
-          </a>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            RLS Testing
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Test Row Level Security policies with different user contexts.
-          </p>
-          <a
-            href="/lab/rls"
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
-            Test RLS →
-          </a>
+      {/* Featured Tools */}
+      <div>
+        <h2 className="text-xl font-semibold text-foreground mb-4">Featured Tools</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {featuredTools.map((tool) => (
+            <Card key={tool.title} className="group hover:shadow-md transition-all duration-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl" role="img" aria-label={tool.title}>
+                      {tool.icon}
+                    </span>
+                    <div>
+                      <CardTitle className="text-lg">{tool.title}</CardTitle>
+                      <Badge variant="secondary" className="text-xs mt-1">
+                        {tool.category}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <CardDescription className="mb-4 text-sm">
+                  {tool.description}
+                </CardDescription>
+                <Button asChild variant="outline" size="sm" className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <Link href={tool.href} className="flex items-center">
+                    Open Tool
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
       
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">
-              Development Environment
-            </h3>
-            <div className="mt-2 text-sm text-blue-700">
-              <p>
-                This Lab environment is only available in development mode. 
-                It provides tools for testing authorization policies, context building, 
-                and data validation.
-              </p>
-            </div>
-          </div>
+      {/* Quick Stats */}
+      <div>
+        <h2 className="text-xl font-semibold text-foreground mb-4">Quick Stats</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-primary">11</div>
+              <div className="text-sm text-muted-foreground">Lab Tools Available</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-primary">5</div>
+              <div className="text-sm text-muted-foreground">Tool Categories</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-primary">∞</div>
+              <div className="text-sm text-muted-foreground">Test Scenarios</div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+      
+      {/* Development Notice */}
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertTitle>Development Environment</AlertTitle>
+        <AlertDescription>
+          This Lab environment is only available in development mode. 
+          It provides comprehensive tools for testing authorization policies, context building, 
+          persona management, and data validation. All test data is isolated and safe for experimentation.
+        </AlertDescription>
+      </Alert>
     </div>
   )
 }

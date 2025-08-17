@@ -125,7 +125,7 @@
     - Access to **confidential** notes requires a temporary grant or explicit policy
     - _Requirements: 8.2, 8.3, 22.1, 22.2_
 
-  - [-] 6.2 Build referral workflow
+  - [x] 6.2 Build referral workflow
     - Create referral CRUD with direct vs record-keeping types
     - Implement PHI detection and consent validation for referrals
     - Add visibility scope controls and status tracking
@@ -133,7 +133,7 @@
     - _Requirements: 8.1, 8.4, 3.4, 3.5_
 
 - [ ] 7. Lab/Test Harness Development
-  - [ ] 7.1 Create Lab UI shell and navigation
+  - [-] 7.1 Create Lab UI shell and navigation
     - Build Next.js app with App Router and Tailwind CSS
     - Create lab layout with tab navigation for all components
     - Add shadcn/ui components for consistent styling
