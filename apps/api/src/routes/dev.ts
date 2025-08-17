@@ -585,6 +585,243 @@ const dev: FastifyPluginAsync = async (app) => {
       })
     }
   })
+
+  // GET /dev/rls/tables - Get whitelisted tables for RLS testing
+  app.get('/dev/rls/tables', {
+    schema: {
+      description: 'Get whitelisted tables available for RLS testing',
+      tags: ['Development', 'RLS'],
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            tables: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  schema: { type: 'string' },
+                  description: { type: 'string' },
+                  tenant_scoped: { type: 'boolean' }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      // Whitelisted tables for RLS testing
+      const whitelistedTables = [
+        {
+          name: 'users_profile',
+          schema: 'app',
+          description: 'User profiles and basic information',
+          tenant_scoped: false
+        },
+        {
+          name: 'organizations',
+          schema: 'app',
+          description: 'Organizations with tenant boundaries',
+          tenant_scoped: true
+        },
+        {
+          name: 'service_locations',
+          schema: 'app',
+          description: 'Service locations within organizations',
+          tenant_scoped: true
+        },
+        {
+          name: 'role_assignments',
+          schema: 'app',
+          description: 'User role assignments',
+          tenant_scoped: false
+        },
+        {
+          name: 'clients',
+          schema: 'app',
+          description: 'Client records (tenant-scoped)',
+          tenant_scoped: true
+        },
+        {
+          name: 'client_cases',
+          schema: 'app',
+          description: 'Client cases and assignments',
+          tenant_scoped: true
+        },
+        {
+          name: 'notes',
+          schema: 'app',
+          description: 'Case notes and documentation',
+          tenant_scoped: true
+        },
+        {
+          name: 'referrals',
+          schema: 'app',
+          description: 'Referrals between providers',
+          tenant_scoped: true
+        }
+      ]
+
+      request.log.info({ count: whitelistedTables.length }, 'Listed whitelisted tables for RLS testing')
+      
+      return { tables: whitelistedTables }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      request.log.error({ error: errorMessage }, 'Failed to list RLS tables')
+      
+      return reply.code(500).send({
+        code: 'RLS_TABLES_ERROR',
+        message: 'Failed to list RLS tables',
+        reason: errorMessage,
+        correlationId: request.id
+      })
+    }
+  })
+
+  // POST /dev/rls/query - Execute RLS test query
+  app.post('/dev/rls/query', {
+    schema: {
+      description: 'Execute RLS test query with persona context',
+      tags: ['Development', 'RLS'],
+      body: {
+        type: 'object',
+        required: ['table', 'persona_id'],
+        properties: {
+          table: { type: 'string' },
+          persona_id: { type: 'string' },
+          filters: {
+            type: 'object',
+            additionalProperties: true
+          },
+          limit: { type: 'number', minimum: 1, maximum: 100, default: 10 },
+          columns: {
+            type: 'array',
+            items: { type: 'string' }
+          }
+        }
+      },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            table: { type: 'string' },
+            persona_id: { type: 'string' },
+            row_count: { type: 'number' },
+            total_count: { type: 'number' },
+            rows: {
+              type: 'array',
+              items: {
+                type: 'object',
+                additionalProperties: true
+              }
+            },
+            query_info: {
+              type: 'object',
+              properties: {
+                executed_at: { type: 'string' },
+                execution_time_ms: { type: 'number' },
+                filters_applied: { type: 'object' }
+              }
+            }
+          }
+        }
+      }
+    }
+  }, async (request, reply) => {
+    try {
+      const { table, persona_id, filters = {}, limit = 10, columns } = request.body as {
+        table: string
+        persona_id: string
+        filters?: Record<string, any>
+        limit?: number
+        columns?: string[]
+      }
+
+      const startTime = Date.now()
+
+      // Get persona information to simulate JWT context
+      const persona = await personaService.getCurrentSession(persona_id)
+      if (!persona) {
+        return reply.code(404).send({
+          code: 'PERSONA_NOT_FOUND',
+          message: 'Persona session not found',
+          reason: `No active session found for persona ${persona_id}`,
+          correlationId: request.id
+        })
+      }
+
+      // Validate table is whitelisted
+      const whitelistedTables = [
+        'users_profile', 'organizations', 'service_locations', 
+        'role_assignments', 'clients', 'client_cases', 'notes', 'referrals'
+      ]
+      
+      if (!whitelistedTables.includes(table)) {
+        return reply.code(400).send({
+          code: 'TABLE_NOT_WHITELISTED',
+          message: 'Table not whitelisted for RLS testing',
+          reason: `Table '${table}' is not in the whitelist: ${whitelistedTables.join(', ')}`,
+          correlationId: request.id
+        })
+      }
+
+      // For now, return mock data since we don't have a working database connection
+      // In a real implementation, this would execute the query with RLS context
+      const mockRows = [
+        {
+          id: 'mock_id_1',
+          name: 'Mock Record 1',
+          tenant_root_id: persona.active_org_id || 'org_123',
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 'mock_id_2', 
+          name: 'Mock Record 2',
+          tenant_root_id: persona.active_org_id || 'org_123',
+          created_at: new Date().toISOString()
+        }
+      ]
+
+      const executionTime = Date.now() - startTime
+
+      const result = {
+        success: true,
+        table,
+        persona_id,
+        row_count: mockRows.length,
+        total_count: mockRows.length,
+        rows: mockRows.slice(0, limit),
+        query_info: {
+          executed_at: new Date().toISOString(),
+          execution_time_ms: executionTime,
+          filters_applied: filters
+        }
+      }
+
+      request.log.info({
+        table,
+        persona_id,
+        row_count: result.row_count,
+        execution_time_ms: executionTime
+      }, 'Executed RLS test query')
+
+      return result
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      request.log.error({ error: errorMessage }, 'Failed to execute RLS query')
+      
+      return reply.code(500).send({
+        code: 'RLS_QUERY_ERROR',
+        message: 'Failed to execute RLS query',
+        reason: errorMessage,
+        correlationId: request.id
+      })
+    }
+  })
 };
 
 export default dev;

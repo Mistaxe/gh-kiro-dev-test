@@ -147,7 +147,7 @@
     - Implement active organization and location selection
     - _Requirements: 5.1, 5.5_
 
-  - [-] 7.3 Build policy simulator interface
+  - [x] 7.3 Build policy simulator interface
     - Create policy simulation UI with role, object, action inputs
     - Add context builder interface for testing scenarios
     - Implement real-time policy evaluation with decision display
@@ -156,7 +156,7 @@
     - Echo the **ctx snapshot** used for the evaluation
     - _Requirements: 5.2, 12.3_
 
-  - [ ] 7.4 Create RLS testing interface
+  - [-] 7.4 Create RLS testing interface
     - Build RLS query interface with whitelisted table selection
     - Add filter builder for testing different query scenarios
     - Implement query execution with JWT context switching
