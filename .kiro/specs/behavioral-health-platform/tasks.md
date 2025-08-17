@@ -132,7 +132,7 @@
     - Build referral search and matching functionality
     - _Requirements: 8.1, 8.4, 3.4, 3.5_
 
-- [ ] 7. Lab/Test Harness Development
+- [x] 7. Lab/Test Harness Development
   - [x] 7.1 Create Lab UI shell and navigation
     - Build Next.js app with App Router and Tailwind CSS
     - Create lab layout with tab navigation for all components
@@ -156,22 +156,22 @@
     - Echo the **ctx snapshot** used for the evaluation
     - _Requirements: 5.2, 12.3_
 
-  - [-] 7.4 Create RLS testing interface
+  - [x] 7.4 Create RLS testing interface
     - Build RLS query interface with whitelisted table selection
     - Add filter builder for testing different query scenarios
     - Implement query execution with JWT context switching
     - Display results with row count validation
     - _Requirements: 5.3, 21.3_
 
-- [ ] 8. Data Seeding and Generation
-  - [ ] 8.1 Build comprehensive data seeder
+- [x] 8. Data Seeding and Generation
+  - [x] 8.1 Build comprehensive data seeder
     - Create idempotent seeder for regions, networks, organizations
     - Add realistic user generation with role assignments
     - Implement client and case generation with faker data
     - Build availability and referral seed data
     - _Requirements: 5.4, 12.4_
 
-  - [ ] 8.2 Create seeder UI and controls
+  - [x] 8.2 Create seeder UI and controls
     - Build seeder interface with progress tracking
     - Add selective seeding options for different entity types
     - Implement seed data cleanup and reset functionality

@@ -21,6 +21,7 @@ import serviceProfiles from './routes/service-profiles.js';
 import availability from './routes/availability.js';
 import notes from './routes/notes.js';
 import referrals from './routes/referrals.js';
+import seeder from './routes/seeder.js';
 import dev from './routes/dev.js';
 
 const app = Fastify({
@@ -122,6 +123,7 @@ await app.register(serviceProfiles, { prefix: '/api' });
 await app.register(availability, { prefix: '/api' });
 await app.register(notes, { prefix: '/api' });
 await app.register(referrals, { prefix: '/api' });
+await app.register(seeder, { prefix: '/api' });
 await app.register(dev, { prefix: '/api' });
 
 // Global error handler
